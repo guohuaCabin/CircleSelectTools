@@ -1,0 +1,22 @@
+{
+  "name": "CircleSelectTools",
+  "version": "0.1.0",
+  "summary": "A short description of CircleSelectTools.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/guohuaden@163.com/CircleSelectTools",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "guohuaden@163.com": "name_guohua@163.com"
+  },
+  "source": {
+    "git": "https://github.com/guohuaden@163.com/CircleSelectTools.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "CircleSelectTools/Classes/**/*"
+}

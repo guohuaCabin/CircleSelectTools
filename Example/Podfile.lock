@@ -1,0 +1,16 @@
+PODS:
+  - CircleSelectTools (0.1.0)
+
+DEPENDENCIES:
+  - CircleSelectTools (from `../`)
+
+EXTERNAL SOURCES:
+  CircleSelectTools:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  CircleSelectTools: 5e9b2cd4ec96223e60b5bb68ec6254ae142d7152
+
+PODFILE CHECKSUM: 2b275d608c6a4a0acfe5ae9434b90cdc17352ffd
+
+COCOAPODS: 1.10.0.beta.1

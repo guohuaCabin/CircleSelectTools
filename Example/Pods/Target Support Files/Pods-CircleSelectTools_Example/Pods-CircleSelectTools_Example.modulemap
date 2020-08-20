@@ -1,0 +1,6 @@
+framework module Pods_CircleSelectTools_Example {
+  umbrella header "Pods-CircleSelectTools_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}

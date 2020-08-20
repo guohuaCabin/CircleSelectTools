@@ -1,0 +1,134 @@
+//
+//  FloatingButton.m
+//  KKLShellKit
+//
+//  Created by guohua on 2020/8/5.
+//
+
+#import "FloatingButton.h"
+#import "FloatingHeader.h"
+#import "UIColor+Hex.h"
+#import "ScreenShotHelper.h"
+#import "UIWindow+FloatingKey.h"
+#import "FloatingContainerWindow.h"
+@interface FloatingButton ()
+@property (nonatomic, weak) id<FloatingButtonDelegate> delegate;
+@property (nonatomic,strong) FloatingContainerWindow *containerWindow;
+@end
+
+@implementation FloatingButton
+
++ (instancetype)floatingButtonWithDelegate:(id<FloatingButtonDelegate>)delegate {
+    FloatingButton *flButton = [[self alloc] initWithFrame:CGRectMake(0, 0, FB_Width, FB_Width)
+                                                     color:[UIColor colorWithHexString:@"0x4d64fd"]
+                                                  delegate:delegate];
+    
+    return flButton;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+                        color:(UIColor*)color
+                     delegate:(id<FloatingButtonDelegate>)delegate {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.delegate = delegate;
+        self.clipsToBounds = YES;
+        self.backgroundColor = color;
+        self.layer.cornerRadius = frame.size.width/2.0;
+        self.layer.borderColor = [UIColor whiteColor].CGColor;
+        self.layer.borderWidth = 2;
+        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(handlePanGesture:)];
+        pan.delaysTouchesBegan = YES;
+        [self addGestureRecognizer:pan];
+    }
+
+    return self;
+}
+
+#pragma mark - internal
+
+- (void)handlePanGesture:(UIPanGestureRecognizer *)pan {
+    ///QGH:悬浮按钮可能因为层级原因出问题的地方
+    UIWindow *appWindow = [UIApplication sharedApplication].delegate.window;//[FLKeyWindowTracker sharedInstance].keyWindow ?: [UIApplication sharedApplication].keyWindow;
+    CGPoint panPoint = [pan locationInView:appWindow];
+
+    if(pan.state == UIGestureRecognizerStateBegan) {
+        if ([self.delegate respondsToSelector:@selector(floatingButton:moveStartFrom:)]) {
+            [self.delegate floatingButton:self moveStartFrom:panPoint];
+        }
+    } else if(pan.state == UIGestureRecognizerStateChanged) {
+        self.containerWindow.center = panPoint;
+        if ([self.delegate respondsToSelector:@selector(floatingButton:moveTo:)]) {
+            [self.delegate floatingButton:self moveTo:panPoint];
+        }
+    } else if (pan.state == UIGestureRecognizerStateEnded || pan.state == UIGestureRecognizerStateCancelled) {
+        if ([self.delegate respondsToSelector:@selector(floatingButton:moveEndTo:)]) {
+            [self.delegate floatingButton:self moveEndTo:panPoint];
+        }
+        [self moveToSide:panPoint];
+    }
+}
+
+- (void)moveToSide:(CGPoint)panPoint {
+    CGFloat ballWidth = self.frame.size.width;
+    CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
+    CGFloat screenHeight =  [[UIScreen mainScreen] bounds].size.height;
+
+    CGFloat left = fabs(panPoint.x);
+    CGFloat right = fabs(screenWidth - left);
+
+    CGFloat minSpace = MIN(left, right);
+    CGPoint newCenter = CGPointZero;
+    CGFloat targetY = panPoint.y;
+
+
+    if (targetY - ballWidth/2 < [ScreenShotHelper safeAreaInsetsTop]) {
+        targetY =   [ScreenShotHelper safeAreaInsetsTop] + ballWidth/2;
+    }
+
+    if (targetY + ballWidth/2 > screenHeight - [ScreenShotHelper safeAreaInsetsBottom]) {
+        targetY =   screenHeight  - [ScreenShotHelper safeAreaInsetsBottom] - ballWidth/2;
+    }
+
+    CGFloat centerXSpace = ballWidth /2;
+
+    if (minSpace == left) {
+        newCenter = CGPointMake(centerXSpace, targetY);
+    }else if (minSpace == right) {
+        newCenter = CGPointMake(screenWidth - centerXSpace, targetY);
+    }
+
+    [UIView animateWithDuration:.25 animations:^{
+        self.containerWindow.center = newCenter;
+    }];
+}
+
+#pragma mark - public
+
+- (void)showFloatingButton {
+    if (self.containerWindow) {
+        self.containerWindow.hidden = NO;
+        return;
+    }
+
+    FloatingContainerWindow *backWindow = [[FloatingContainerWindow alloc] initWithFrame:CGRectMake(0, 100, FB_Width, FB_Width)];
+    backWindow.rootViewController = [UIViewController new];
+
+    backWindow.rootViewController.view = self;
+    [backWindow setHidden:NO];
+    self.containerWindow = backWindow;
+}
+
+- (void)hideFloatingButton {
+    self.containerWindow.hidden = YES;
+}
+
+- (void)removeFromScreen {
+    [self.containerWindow destroyWindow];
+    self.containerWindow = nil;
+    [self removeFromSuperview];
+    
+}
+
+
+@end

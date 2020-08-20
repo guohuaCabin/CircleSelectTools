@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'CircleSelectTools_Example' do
+  pod 'CircleSelectTools', :path => '../'
+
+  target 'CircleSelectTools_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
